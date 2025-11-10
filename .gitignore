@@ -1,0 +1,32 @@
+#Virtual environment
+venv/
+env/
+.env
+
+#Python cache files
+pycache/
+*.pyc
+*.pyo
+*.pyd
+
+#IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+#Database files (especially for SQLite)
+*.db
+*.sqlite3
+
+#Log files
+*.log
+
+#OS generated files
+.DS_Store
+Thumbs.db
+
+#Distribution / packaging
+dist/
+build/
+*.egg-info/
