@@ -27,6 +27,21 @@ class Poll(db.Model):
     def __repr__(self):
         return f'<Poll {self.title}>'
 
+
+class Vote(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    poll_id = db.Column(db.Integer, db.ForeignKey('poll.id'), nullable=False)
+    ip_address = db.Column(db.String(100), nullable=False)
+    selected_option = db.Column(db.Integer, nullable=False)  # 1, 2, 3 или 4
+    voted_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    # Связь с опросом
+    poll = db.relationship('Poll', backref=db.backref('votes', lazy=True))
+
+    def __repr__(self):
+        return f'<Vote for Poll {self.poll_id}, option {self.selected_option}>'
+
+
 @app.route('/')
 def index():
     return 'База данных настроена! Скоро здесь будут опросы.'
@@ -34,6 +49,4 @@ def index():
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
-        print("База данных создана успешно!")
-        print("Файл polls.db должен появиться в папке проекта")
     app.run(debug=True)
