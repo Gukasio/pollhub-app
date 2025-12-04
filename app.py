@@ -1,4 +1,5 @@
 from flask import Flask, render_template
+
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from datetime import timezone
@@ -44,7 +45,7 @@ class Vote(db.Model):
 
 @app.route('/')
 def index():
-    return 'База данных настроена! Скоро здесь будут опросы.'
+    return render_template('index.html')
 
 if __name__ == '__main__':
     with app.app_context():

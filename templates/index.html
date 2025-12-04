@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}Главная - PollHub{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="bi bi-bar-chart me-2"></i>Добро пожаловать в PollHub!</h4>
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">Создавайте опросы и делитесь мнениями</h5>
+                <p class="card-text">
+                    PollHub — это простой и удобный сервис для создания опросов. 
+                    Создайте опрос с 4 вариантами ответов за минуту, поделитесь ссылкой 
+                    и смотрите результаты в реальном времени!
+                </p>
+                <a href="{{ url_for('create_poll') }}" class="btn btn-success btn-lg">
+                    <i class="bi bi-plus-circle me-2"></i>Создать новый опрос
+                </a>
+            </div>
+        </div>
+
+        <!-- Здесь позже будет список опросов -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-list-check me-2"></i>Последние опросы</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i>
+                    Опросы появятся здесь после добавления функционала базы данных
+                </div>
+                <!-- 
+                Пример как будет выглядеть опрос:
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">Какой ваш любимый язык программирования?</h5>
+                        <p class="card-text">Python, JavaScript, Java или C++?</p>
+                        <a href="#" class="btn btn-primary">Проголосовать</a>
+                    </div>
+                </div>
+                -->
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="bi bi-lightbulb me-2"></i>Как это работает?</h5>
+            </div>
+            <div class="card-body">
+                <ol class="list-group list-group-flush">
+                    <li class="list-group-item d-flex">
+                        <span class="badge bg-primary me-3">1</span>
+                        <span>Создайте опрос с 4 вариантами ответов</span>
+                    </li>
+                    <li class="list-group-item d-flex">
+                        <span class="badge bg-primary me-3">2</span>
+                        <span>Поделитесь ссылкой с друзьями</span>
+                    </li>
+                    <li class="list-group-item d-flex">
+                        <span class="badge bg-primary me-3">3</span>
+                        <span>Голосуйте анонимно</span>
+                    </li>
+                    <li class="list-group-item d-flex">
+                        <span class="badge bg-primary me-3">4</span>
+                        <span>Смотрите результаты в реальном времени</span>
+                    </li>
+                </ol>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="bi bi-shield-check me-2"></i>Преимущества</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Бесплатно</li>
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Анонимно</li>
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Простота использования</li>
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Результаты в реальном времени</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
