@@ -20,6 +20,7 @@ pycache/
 *.db
 *.sqlite3
 
+
 #Log files
 *.log
 
