@@ -22,26 +22,43 @@
             </div>
         </div>
 
-        <!-- Здесь позже будет список опросов -->
+        <!-- Список опросов -->
         <div class="card mt-4">
             <div class="card-header">
                 <h5 class="mb-0"><i class="bi bi-list-check me-2"></i>Последние опросы</h5>
             </div>
             <div class="card-body">
-                <div class="alert alert-info">
-                    <i class="bi bi-info-circle me-2"></i>
-                    Опросы появятся здесь после добавления функционала базы данных
-                </div>
-                <!-- 
-                Пример как будет выглядеть опрос:
-                <div class="card mb-3">
-                    <div class="card-body">
-                        <h5 class="card-title">Какой ваш любимый язык программирования?</h5>
-                        <p class="card-text">Python, JavaScript, Java или C++?</p>
-                        <a href="#" class="btn btn-primary">Проголосовать</a>
+                {% if polls %}
+                    {% for poll in polls %}
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ poll.title }}</h5>
+                            <p class="card-text">{{ poll.question }}</p>
+                            <div class="mb-2">
+                                <small class="text-muted">Варианты ответов:</small>
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item">1. {{ poll.option_one }}</li>
+                                    <li class="list-group-item">2. {{ poll.option_two }}</li>
+                                    <li class="list-group-item">3. {{ poll.option_three }}</li>
+                                    <li class="list-group-item">4. {{ poll.option_four }}</li>
+                                </ul>
+                            </div>
+                            <a href="#" class="btn btn-primary btn-sm">Проголосовать</a>
+                            <a href="#" class="btn btn-outline-secondary btn-sm">Результаты</a>
+                            <small class="text-muted d-block mt-2">
+                                <i class="bi bi-clock"></i> 
+                                Создан: {{ poll.created_at.strftime('%d.%m.%Y %H:%M') }}
+                            </small>
+                        </div>
                     </div>
-                </div>
-                -->
+                    {% endfor %}
+                {% else %}
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Пока нет созданных опросов. 
+                        <a href="{{ url_for('create_poll') }}" class="alert-link">Создайте первый!</a>
+                    </div>
+                {% endif %}
             </div>
         </div>
     </div>

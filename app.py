@@ -45,7 +45,9 @@ class Vote(db.Model):
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    # Получаем все опросы из БД, отсортированные по дате (новые первыми)
+    polls = Poll.query.order_by(Poll.created_at.desc()).all()
+    return render_template('index.html', polls=polls)
 
 # Временные маршруты для работы HTML
 @app.route('/create')
@@ -58,5 +60,5 @@ def admin():
 
 if __name__ == '__main__':
     with app.app_context():
-        db.create_all()
+        db.create_all()        
     app.run(debug=True)
