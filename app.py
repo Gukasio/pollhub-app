@@ -34,7 +34,7 @@ class Vote(db.Model):
     poll_id = db.Column(db.Integer, db.ForeignKey('poll.id'), nullable=False)
     ip_address = db.Column(db.String(100), nullable=False)
     selected_option = db.Column(db.Integer, nullable=False)  # 1, 2, 3 или 4
-    voted_at = db.Column(db.DateTime, default=datetime.utcnow)
+    voted_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
     # Связь с опросом
     poll = db.relationship('Poll', backref=db.backref('votes', lazy=True))
@@ -46,6 +46,15 @@ class Vote(db.Model):
 @app.route('/')
 def index():
     return render_template('index.html')
+
+# Временные маршруты для работы HTML
+@app.route('/create')
+def create_poll():
+    return 'Страница создания опроса (в разработке)'
+
+@app.route('/admin')
+def admin():
+    return 'Админ-панель (в разработке)'
 
 if __name__ == '__main__':
     with app.app_context():
