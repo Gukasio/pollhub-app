@@ -43,8 +43,8 @@
                                     <li class="list-group-item">4. {{ poll.option_four }}</li>
                                 </ul>
                             </div>
-                            <a href="#" class="btn btn-primary btn-sm">Проголосовать</a>
-                            <a href="#" class="btn btn-outline-secondary btn-sm">Результаты</a>
+                            <a href="{{ url_for('poll_detail', poll_id=poll.id) }}" class="btn btn-primary btn-sm">Проголосовать</a>
+<a href="{{ url_for('poll_results', poll_id=poll.id) }}" class="btn btn-outline-secondary btn-sm">Результаты</a>
                             <small class="text-muted d-block mt-2">
                                 <i class="bi bi-clock"></i> 
                                 Создан: {{ poll.created_at.strftime('%d.%m.%Y %H:%M') }}
