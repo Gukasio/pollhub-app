@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, flash, render_template, request, url_for
 
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
@@ -6,6 +6,7 @@ from datetime import timezone
 import os
 
 app = Flask(__name__)
+app.secret_key = 'dev-secret-key-12345'
 
 # Настройка базы данных
 db_path = os.path.join(os.path.dirname(__file__), 'polls.db')
@@ -50,9 +51,49 @@ def index():
     return render_template('index.html', polls=polls)
 
 # Временные маршруты для работы HTML
-@app.route('/create')
+@app.route('/create', methods=['GET', 'POST'])
 def create_poll():
-    return 'Страница создания опроса (в разработке)'
+    if request.method == 'POST':
+        # Получаем данные из формы
+        title = request.form.get('title')
+        question = request.form.get('question')
+        option_one = request.form.get('option_one')
+        option_two = request.form.get('option_two')
+        option_three = request.form.get('option_three')
+        option_four = request.form.get('option_four')
+        
+        # Валидация данных
+        if not title or not question:
+            flash('Название и вопрос опроса обязательны!', 'danger')
+            return app.redirect(app.url_for('create_poll'))
+        
+        if not all([option_one, option_two, option_three, option_four]):
+            flash('Все 4 варианта ответа должны быть заполнены!', 'danger')
+            return app.redirect(app.url_for('create_poll'))
+        
+        # Создаем новый опрос
+        new_poll = Poll(
+            title=title.strip(),
+            question=question.strip(),
+            option_one=option_one.strip(),
+            option_two=option_two.strip(),
+            option_three=option_three.strip(),
+            option_four=option_four.strip()
+        )
+        
+        # Сохраняем в БД
+        try:
+            db.session.add(new_poll)
+            db.session.commit()
+            flash('Опрос успешно создан!', 'success')
+            return app.redirect(url_for('index'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Ошибка при создании опроса: {str(e)}', 'danger')
+            return app.redirect(app.url_for('create_poll'))
+    
+    # GET запрос - показываем форму (форму сделает напарник)
+    return render_template('create_poll.html')
 
 @app.route('/admin')
 def admin():
