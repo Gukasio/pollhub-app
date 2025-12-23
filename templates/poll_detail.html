@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}{{ poll.title }} - PollHub{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">{{ poll.title }}</h4>
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">{{ poll.question }}</h5>
+                
+                {% if has_voted %}
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        Вы уже голосовали в этом опросе с IP {{ user_ip }}.
+                        <a href="{{ url_for('poll_results', poll_id=poll.id) }}" class="alert-link">
+                            Посмотреть результаты
+                        </a>
+                    </div>
+                {% else %}
+                    <form method="POST" action="#">
+                        <div class="mb-3">
+                            <label class="form-label">Выберите вариант ответа:</label>
+                            <div class="list-group">
+                                <label class="list-group-item">
+                                    <input class="form-check-input me-2" type="radio" name="selected_option" value="1" required>
+                                    {{ poll.option_one }}
+                                </label>
+                                <label class="list-group-item">
+                                    <input class="form-check-input me-2" type="radio" name="selected_option" value="2">
+                                    {{ poll.option_two }}
+                                </label>
+                                <label class="list-group-item">
+                                    <input class="form-check-input me-2" type="radio" name="selected_option" value="3">
+                                    {{ poll.option_three }}
+                                </label>
+                                <label class="list-group-item">
+                                    <input class="form-check-input me-2" type="radio" name="selected_option" value="4">
+                                    {{ poll.option_four }}
+                                </label>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="bi bi-check-circle me-2"></i>Отправить голос
+                        </button>
+                    </form>
+                {% endif %}
+                
+                <div class="mt-4">
+                    <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-2"></i>Назад к списку опросов
+                    </a>
+                </div>
+            </div>
+            <div class="card-footer text-muted">
+                <small>
+                    <i class="bi bi-clock"></i> Создан: {{ poll.created_at.strftime('%d.%m.%Y %H:%M') }}
+                    | <i class="bi bi-people"></i> Проголосовало: {{ poll.votes|length }}
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

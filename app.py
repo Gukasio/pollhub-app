@@ -95,9 +95,30 @@ def create_poll():
     # GET запрос - показываем форму (форму сделает напарник)
     return render_template('create_poll.html')
 
+@app.route('/poll/<int:poll_id>')
+def poll_detail(poll_id):
+    # Находим опрос по ID или возвращаем 404
+    poll = Poll.query.get_or_404(poll_id)
+    
+    # Получаем IP пользователя для проверки голосования
+    user_ip = request.remote_addr
+    
+    # Проверяем голосовал ли уже этот IP
+    has_voted = Vote.query.filter_by(poll_id=poll_id, ip_address=user_ip).first() is not None
+    
+    return render_template('poll_detail.html', 
+                         poll=poll, 
+                         has_voted=has_voted, 
+                         user_ip=user_ip)
+
 @app.route('/admin')
 def admin():
     return 'Админ-панель (в разработке)'
+
+@app.route('/poll/<int:poll_id>/results')
+def poll_results(poll_id):
+    poll = Poll.query.get_or_404(poll_id)
+    return f'Результаты опроса "{poll.title}" (скоро будут)'
 
 if __name__ == '__main__':
     with app.app_context():
