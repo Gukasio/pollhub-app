@@ -17,6 +17,23 @@
                     <i class="bi bi-people me-2"></i>
                     Всего проголосовало: <strong>{{ total_votes }}</strong> человек
                 </div>
+
+                {% if user_vote %}
+                    <div class="alert alert-success">
+                        <i class="bi bi-check-circle me-2"></i>
+                        <strong>Вы проголосовали за вариант {{ user_vote }}:</strong> 
+                        "{{ option_texts[user_vote] }}"
+                        <small class="d-block mt-1">(IP: {{ user_ip }})</small>
+                    </div>
+                {% elif total_votes > 0 %}
+                    <div class="alert alert-secondary">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Вы ещё не голосовали в этом опросе. 
+                        <a href="{{ url_for('poll_detail', poll_id=poll.id) }}" class="alert-link">
+                            Хотите проголосовать?
+                        </a>
+                    </div>
+                {% endif %}
                 
                 {% if total_votes > 0 %}
                     <div class="mt-4">
@@ -54,6 +71,9 @@
                     <div class="alert alert-warning">
                         <i class="bi bi-exclamation-triangle me-2"></i>
                         Пока никто не проголосовал в этом опросе.
+                        <a href="{{ url_for('poll_detail', poll_id=poll.id) }}" class="alert-link">
+                            Будьте первым!
+                        </a>
                     </div>
                 {% endif %}
                 
