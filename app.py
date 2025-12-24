@@ -162,6 +162,7 @@ def poll_results(poll_id):
     """Страница результатов опроса"""
     
     poll = Poll.query.get_or_404(poll_id)
+    user_ip = request.remote_addr
     
     # Получаем все голоса для этого опроса
     votes = Vote.query.filter_by(poll_id=poll_id).all()
@@ -172,6 +173,13 @@ def poll_results(poll_id):
     for vote in votes:
         vote_counts[vote.selected_option] += 1
     
+    # Находим голос текущего пользователя
+    user_vote = None
+    for vote in votes:
+        if vote.ip_address == user_ip:
+            user_vote = vote.selected_option
+            break
+
     # Считаем проценты
     percentages = {}
     option_texts = {
@@ -190,7 +198,9 @@ def poll_results(poll_id):
                          total_votes=total_votes,
                          vote_counts=vote_counts,
                          percentages=percentages,
-                         option_texts=option_texts)
+                         option_texts=option_texts,
+                         user_vote=user_vote,
+                         user_ip=user_ip)
 
 if __name__ == '__main__':
     with app.app_context():
