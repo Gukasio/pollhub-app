@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}Результаты: {{ poll.title }} - PollHub{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h4 class="mb-0"><i class="bi bi-bar-chart me-2"></i>Результаты опроса</h4>
+            </div>
+            <div class="card-body">
+                <h3 class="card-title">{{ poll.title }}</h3>
+                <p class="lead">{{ poll.question }}</p>
+                
+                <div class="alert alert-secondary">
+                    <i class="bi bi-people me-2"></i>
+                    Всего проголосовало: <strong>{{ total_votes }}</strong> человек
+                </div>
+                
+                {% if total_votes > 0 %}
+                    <div class="mt-4">
+                        <h5>Результаты:</h5>
+                        {% for option_num in [1, 2, 3, 4] %}
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span>
+                                    <strong>{{ option_num }}.</strong> 
+                                    {{ option_texts[option_num] }}
+                                </span>
+                                <span>
+                                    {{ vote_counts[option_num] }} голосов 
+                                    ({{ "%.1f"|format(percentages[option_num]) }}%)
+                                </span>
+                            </div>
+                            <div class="progress" style="height: 25px;">
+                                <div class="progress-bar 
+                                    {% if option_num == 1 %}bg-success
+                                    {% elif option_num == 2 %}bg-primary
+                                    {% elif option_num == 3 %}bg-warning
+                                    {% else %}bg-danger{% endif %}" 
+                                    role="progressbar" 
+                                    style=`width: {{ percentages.get(option_num, 0) }}%`
+                                    aria-valuenow="{{ percentages[option_num] }}" 
+                                    aria-valuemin="0" 
+                                    aria-valuemax="100">
+                                    {{ "%.1f"|format(percentages[option_num]) }}%
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        Пока никто не проголосовал в этом опросе.
+                    </div>
+                {% endif %}
+                
+                <div class="mt-4">
+                    <a href="{{ url_for('poll_detail', poll_id=poll.id) }}" class="btn btn-primary">
+                        <i class="bi bi-arrow-left me-2"></i>Вернуться к опросу
+                    </a>
+                    <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-house me-2"></i>На главную
+                    </a>
+                </div>
+            </div>
+            <div class="card-footer text-muted">
+                <small>
+                    <i class="bi bi-clock"></i> Создан: {{ poll.created_at.strftime('%d.%m.%Y %H:%M') }}
+                    | <i class="bi bi-shield-check"></i> Голосование защищено по IP
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
