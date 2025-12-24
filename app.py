@@ -1,4 +1,4 @@
-from flask import Flask, flash, render_template, request, url_for
+from flask import Flask, flash, redirect, render_template, request, url_for
 
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
@@ -111,14 +111,86 @@ def poll_detail(poll_id):
                          has_voted=has_voted, 
                          user_ip=user_ip)
 
+@app.route('/poll/<int:poll_id>/vote', methods=['POST'])
+def vote(poll_id):
+    """Обработка голосования"""
+    
+    # Находим опрос
+    poll = Poll.query.get_or_404(poll_id)
+    
+    # Получаем выбранный вариант
+    selected_option = request.form.get('selected_option')
+    
+    # Валидация: выбран ли вариант
+    if not selected_option or selected_option not in ['1', '2', '3', '4']:
+        flash('Пожалуйста, выберите вариант ответа', 'danger')
+        return redirect(url_for('poll_detail', poll_id=poll_id))
+    
+    # Получаем IP пользователя
+    user_ip = request.remote_addr
+    
+    # Проверяем не голосовал ли уже этот IP в этом опросе
+    existing_vote = Vote.query.filter_by(poll_id=poll_id, ip_address=user_ip).first()
+    if existing_vote:
+        flash(f'Вы уже голосовали в этом опросе (IP: {user_ip})', 'warning')
+        return redirect(url_for('poll_results', poll_id=poll_id))
+    
+    # Создаем новый голос
+    new_vote = Vote(
+        poll_id=poll_id,
+        ip_address=user_ip,
+        selected_option=int(selected_option)
+    )
+    
+    # Сохраняем в БД
+    try:
+        db.session.add(new_vote)
+        db.session.commit()
+        flash('Ваш голос успешно учтен!', 'success')
+        return redirect(url_for('poll_results', poll_id=poll_id))
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Ошибка при сохранении голоса: {str(e)}', 'danger')
+        return redirect(url_for('poll_detail', poll_id=poll_id))
+
 @app.route('/admin')
 def admin():
     return 'Админ-панель (в разработке)'
 
 @app.route('/poll/<int:poll_id>/results')
 def poll_results(poll_id):
+    """Страница результатов опроса"""
+    
     poll = Poll.query.get_or_404(poll_id)
-    return f'Результаты опроса "{poll.title}" (скоро будут)'
+    
+    # Получаем все голоса для этого опроса
+    votes = Vote.query.filter_by(poll_id=poll_id).all()
+    total_votes = len(votes)
+    
+    # Считаем голоса по вариантам
+    vote_counts = {1: 0, 2: 0, 3: 0, 4: 0}
+    for vote in votes:
+        vote_counts[vote.selected_option] += 1
+    
+    # Считаем проценты
+    percentages = {}
+    option_texts = {
+        1: poll.option_one,
+        2: poll.option_two, 
+        3: poll.option_three,
+        4: poll.option_four
+    }
+    
+    if total_votes > 0:
+        for option in range(1, 5):
+            percentages[option] = (vote_counts[option] / total_votes) * 100
+    
+    return render_template('poll_results.html',
+                         poll=poll,
+                         total_votes=total_votes,
+                         vote_counts=vote_counts,
+                         percentages=percentages,
+                         option_texts=option_texts)
 
 if __name__ == '__main__':
     with app.app_context():

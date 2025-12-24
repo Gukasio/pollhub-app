@@ -21,7 +21,7 @@
                         </a>
                     </div>
                 {% else %}
-                    <form method="POST" action="#">
+                    <form method="POST" action="{{ url_for('vote', poll_id=poll.id) }}">
                         <div class="mb-3">
                             <label class="form-label">Выберите вариант ответа:</label>
                             <div class="list-group">
