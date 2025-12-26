@@ -43,7 +43,10 @@
                             <div class="d-flex justify-content-between mb-1">
                                 <span>
                                     <strong>{{ option_num }}.</strong> 
-                                    {{ option_texts[option_num] }}
+                                    {% if option_num == 1 %}{{ poll.option_1 }}
+                                    {% elif option_num == 2 %}{{ poll.option_2 }}
+                                    {% elif option_num == 3 %}{{ poll.option_3 }}
+                                    {% else %}{{ poll.option_4 }}{% endif %}
                                 </span>
                                 <span>
                                     {{ vote_counts[option_num] }} голосов 

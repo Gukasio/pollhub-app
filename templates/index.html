@@ -37,10 +37,10 @@
                             <div class="mb-2">
                                 <small class="text-muted">Варианты ответов:</small>
                                 <ul class="list-group list-group-flush">
-                                    <li class="list-group-item">1. {{ poll.option_one }}</li>
-                                    <li class="list-group-item">2. {{ poll.option_two }}</li>
-                                    <li class="list-group-item">3. {{ poll.option_three }}</li>
-                                    <li class="list-group-item">4. {{ poll.option_four }}</li>
+                                    <li class="list-group-item">1. {{ poll.option_1 }}</li>
+                                    <li class="list-group-item">2. {{ poll.option_2 }}</li>
+                                    <li class="list-group-item">3. {{ poll.option_3 }}</li>
+                                    <li class="list-group-item">4. {{ poll.option_4 }}</li>
                                 </ul>
                             </div>
                             <a href="{{ url_for('poll_detail', poll_id=poll.id) }}" class="btn btn-primary btn-sm">Проголосовать</a>

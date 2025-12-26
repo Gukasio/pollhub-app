@@ -20,10 +20,10 @@ class Poll(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200), nullable=False)
     question = db.Column(db.String(500), nullable=False)
-    option_one = db.Column(db.String(200), nullable=False)
-    option_two = db.Column(db.String(200), nullable=False)
-    option_three = db.Column(db.String(200), nullable=False)
-    option_four = db.Column(db.String(200), nullable=False)
+    option_1 = db.Column(db.String(200), nullable=False)
+    option_2 = db.Column(db.String(200), nullable=False)
+    option_3 = db.Column(db.String(200), nullable=False)
+    option_4 = db.Column(db.String(200), nullable=False)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
     def __repr__(self):
@@ -75,10 +75,10 @@ def create_poll():
         new_poll = Poll(
             title=title.strip(),
             question=question.strip(),
-            option_one=option_1.strip(),
-            option_two=option_2.strip(),
-            option_three=option_3.strip(),
-            option_four=option_4.strip()
+            option_1=option_1.strip(),
+            option_2=option_2.strip(),
+            option_3=option_3.strip(),
+            option_4=option_4.strip()
         )
         
         # Сохраняем в БД
@@ -193,6 +193,8 @@ def poll_results(poll_id):
         for option in range(1, 5):
             percentages[option] = (vote_counts[option] / total_votes) * 100
     
+
+
     return render_template('poll_results.html',
                          poll=poll,
                          total_votes=total_votes,
@@ -201,6 +203,7 @@ def poll_results(poll_id):
                          option_texts=option_texts,
                          user_vote=user_vote,
                          user_ip=user_ip)
+
 
 if __name__ == '__main__':
     with app.app_context():
