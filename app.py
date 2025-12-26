@@ -57,17 +57,17 @@ def create_poll():
         # Получаем данные из формы
         title = request.form.get('title')
         question = request.form.get('question')
-        option_one = request.form.get('option_one')
-        option_two = request.form.get('option_two')
-        option_three = request.form.get('option_three')
-        option_four = request.form.get('option_four')
+        option_1 = request.form.get('option_1')
+        option_2 = request.form.get('option_2')
+        option_3 = request.form.get('option_3')
+        option_4 = request.form.get('option_4')
         
         # Валидация данных
         if not title or not question:
             flash('Название и вопрос опроса обязательны!', 'danger')
             return app.redirect(app.url_for('create_poll'))
         
-        if not all([option_one, option_two, option_three, option_four]):
+        if not all([option_1, option_2, option_3, option_4]):
             flash('Все 4 варианта ответа должны быть заполнены!', 'danger')
             return app.redirect(app.url_for('create_poll'))
         
@@ -75,10 +75,10 @@ def create_poll():
         new_poll = Poll(
             title=title.strip(),
             question=question.strip(),
-            option_one=option_one.strip(),
-            option_two=option_two.strip(),
-            option_three=option_three.strip(),
-            option_four=option_four.strip()
+            option_one=option_1.strip(),
+            option_two=option_2.strip(),
+            option_three=option_3.strip(),
+            option_four=option_4.strip()
         )
         
         # Сохраняем в БД
@@ -183,10 +183,10 @@ def poll_results(poll_id):
     # Считаем проценты
     percentages = {}
     option_texts = {
-        1: poll.option_one,
-        2: poll.option_two, 
-        3: poll.option_three,
-        4: poll.option_four
+        1: poll.option_1,
+        2: poll.option_2, 
+        3: poll.option_3,
+        4: poll.option_4
     }
     
     if total_votes > 0:
