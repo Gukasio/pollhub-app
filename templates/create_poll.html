@@ -1,0 +1,221 @@
+{% extends "base.html" %}
+
+{% block title %}Создать опрос - PollHub{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-create-poll {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    .option-card {
+        border-left: 4px solid #0d6efd;
+        transition: all 0.3s;
+    }
+    .option-card:hover {
+        border-left-color: #198754;
+        transform: translateX(5px);
+    }
+    .option-number {
+        width: 40px;
+        height: 40px;
+        background: #0d6efd;
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        margin-right: 15px;
+    }
+    .form-requirements {
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-10 offset-md-1">
+        <div class="card form-create-poll">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0">
+                    <i class="bi bi-plus-circle me-2"></i>Создать новый опрос
+                </h4>
+            </div>
+            
+            <div class="card-body">
+                <!-- Инструкция -->
+                <div class="alert alert-info mb-4">
+                    <h5 class="alert-heading">
+                        <i class="bi bi-lightbulb me-2"></i>Как создать хороший опрос?
+                    </h5>
+                    <ul class="mb-0">
+                        <li>Задавайте конкретный и понятный вопрос</li>
+                        <li>Варианты ответов должны быть взаимоисключающими</li>
+                        <li>Используйте 4 варианта для простоты выбора</li>
+                        <li>Избегайте предвзятых формулировок</li>
+                    </ul>
+                </div>
+
+                <!-- Форма -->
+                <form method="POST" action="{{ url_for('create_poll') }}">
+                    <!-- Основная информация -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">Основная информация</h5>
+                        </div>
+                        <div class="card-body">
+                            <!-- Название опроса -->
+                            <div class="mb-3">
+                                <label for="title" class="form-label">
+                                    <strong>Название опроса *</strong>
+                                </label>
+                                <input type="text" 
+                                       class="form-control form-control-lg" 
+                                       id="title" 
+                                       name="title" 
+                                       placeholder="Например: Выбор лучшего языка программирования"
+                                       required
+                                       maxlength="200">
+                                <div class="form-text">Краткое и понятное название, которое увидят пользователи</div>
+                            </div>
+
+                            <!-- Вопрос опроса -->
+                            <div class="mb-3">
+                                <label for="question" class="form-label">
+                                    <strong>Вопрос опроса *</strong>
+                                </label>
+                                <textarea class="form-control" 
+                                          id="question" 
+                                          name="question" 
+                                          rows="3" 
+                                          placeholder="Например: Какой язык программирования вы считаете наиболее перспективным в 2024 году?"
+                                          required
+                                          maxlength="500"></textarea>
+                                <div class="form-text">Сформулируйте вопрос так, чтобы на него можно было ответить одним из вариантов</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Варианты ответов -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">Варианты ответов (ровно 4) *</h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="form-requirements mb-3">
+                                <i class="bi bi-info-circle me-1"></i>
+                                Все варианты должны быть заполнены. Порядок имеет значение.
+                            </p>
+
+                            {% for i in range(1, 5) %}
+                            <div class="card option-card mb-3">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <div class="option-number">{{ i }}</div>
+                                        <label class="form-label mb-0">
+                                            <strong>Вариант {{ i }} *</strong>
+                                        </label>
+                                    </div>
+                                    <input type="text" 
+                                           class="form-control" 
+                                           id="option_{{ i }}" 
+                                           name="option_{{ i }}" 
+                                           placeholder="Введите текст варианта ответа"
+                                           required
+                                           maxlength="200">
+                                    <div class="form-text mt-1">
+                                        Максимально конкретный и понятный вариант
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Кнопки отправки -->
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-2"></i>Отмена
+                        </a>
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="bi bi-check-circle me-2"></i>Создать опрос
+                        </button>
+                    </div>
+
+                    <!-- Требования -->
+                    <div class="alert alert-light mt-4">
+                        <h6 class="alert-heading">
+                            <i class="bi bi-shield-check me-2"></i>Правила создания опросов
+                        </h6>
+                        <ul class="mb-0">
+                            <li>Опросы должны соответствовать правилам сообщества</li>
+                            <li>Запрещены опросы с оскорбительным или дискриминационным содержанием</li>
+                            <li>Администрация оставляет за собой право удалять нарушающие правила опросы</li>
+                        </ul>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="card-footer text-muted">
+                <small>
+                    <i class="bi bi-clock me-1"></i>Опрос будет создан мгновенно
+                    <span class="mx-2">•</span>
+                    <i class="bi bi-people me-1"></i>Доступен для всех пользователей
+                    <span class="mx-2">•</span>
+                    <i class="bi bi-shield me-1"></i>Анонимное голосование
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Валидация формы перед отправкой
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const title = document.getElementById('title').value.trim();
+        const question = document.getElementById('question').value.trim();
+        const options = [
+            document.getElementById('option_1').value.trim(),
+            document.getElementById('option_2').value.trim(),
+            document.getElementById('option_3').value.trim(),
+            document.getElementById('option_4').value.trim()
+        ];
+        
+        let errors = [];
+        
+        if (!title) errors.push('Название опроса обязательно');
+        if (!question) errors.push('Вопрос опроса обязателен');
+        
+        options.forEach((option, index) => {
+            if (!option) errors.push(`Вариант ${index + 1} не заполнен`);
+        });
+        
+        // Проверка на уникальность вариантов
+        const uniqueOptions = new Set(options.filter(opt => opt));
+        if (uniqueOptions.size < options.length) {
+            errors.push('Варианты ответов не должны повторяться');
+        }
+        
+        if (errors.length > 0) {
+            e.preventDefault();
+            alert('Пожалуйста, исправьте ошибки:\n\n' + errors.join('\n'));
+        }
+    });
+    
+    // Подсветка активного поля
+    const inputs = document.querySelectorAll('input, textarea');
+    inputs.forEach(input => {
+        input.addEventListener('focus', function() {
+            this.parentElement.classList.add('border-primary', 'border-2');
+        });
+        input.addEventListener('blur', function() {
+            this.parentElement.classList.remove('border-primary', 'border-2');
+        });
+    });
+</script>
+{% endblock %}
