@@ -2,66 +2,273 @@
 
 {% block title %}{{ poll.title }} - PollHub{% endblock %}
 
+{% block extra_css %}
+<style>
+    .vote-option {
+        transition: all 0.2s;
+        border: 2px solid transparent;
+        cursor: pointer;
+    }
+    .vote-option:hover {
+        transform: translateY(-2px);
+        border-color: #0d6efd;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    .vote-option.selected {
+        border-color: #198754;
+        background-color: rgba(25, 135, 84, 0.05);
+    }
+    .option-number {
+        width: 36px;
+        height: 36px;
+        background: #6c757d;
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 0.9rem;
+    }
+    .option-number.selected {
+        background: #198754;
+    }
+    .vote-card {
+        border-radius: 10px;
+        overflow: hidden;
+    }
+    .already-voted-alert {
+        border-left: 5px solid #ffc107;
+    }
+    .poll-question {
+        line-height: 1.6;
+        font-size: 1.1rem;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="row">
-    <div class="col-md-8 offset-md-2">
-        <div class="card">
-            <div class="card-header bg-primary text-white">
-                <h4 class="mb-0">{{ poll.title }}</h4>
-            </div>
-            <div class="card-body">
-                <h5 class="card-title">{{ poll.question }}</h5>
-                
-                {% if has_voted %}
-                    <div class="alert alert-warning">
-                        <i class="bi bi-exclamation-triangle me-2"></i>
-                        Вы уже голосовали в этом опросе с IP {{ user_ip }}.
-                        <a href="{{ url_for('poll_results', poll_id=poll.id) }}" class="alert-link">
-                            Посмотреть результаты
-                        </a>
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <!-- Карточка опроса -->
+        <div class="card vote-card shadow-sm mb-4">
+            <!-- Заголовок -->
+            <div class="card-header bg-primary text-white py-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h3 class="mb-0">
+                            <i class="bi bi-bar-chart me-2"></i>{{ poll.title }}
+                        </h3>
+                        <small class="opacity-75">
+                            <i class="bi bi-clock me-1"></i>
+                            Создан {{ poll.created_at.strftime('%d.%m.%Y в %H:%M') }}
+                        </small>
                     </div>
-                {% else %}
-                    <form method="POST" action="{{ url_for('vote', poll_id=poll.id) }}">
-                        <div class="mb-3">
-                            <label class="form-label">Выберите вариант ответа:</label>
-                            <div class="list-group">
-                                <label class="list-group-item">
-                                    <input class="form-check-input me-2" type="radio" name="selected_option" value="1" required>
-                                    {{ poll.option_1 }}
-                                </label>
-                                <label class="list-group-item">
-                                    <input class="form-check-input me-2" type="radio" name="selected_option" value="2">
-                                    {{ poll.option_2 }}
-                                </label>
-                                <label class="list-group-item">
-                                    <input class="form-check-input me-2" type="radio" name="selected_option" value="3">
-                                    {{ poll.option_3 }}
-                                </label>
-                                <label class="list-group-item">
-                                    <input class="form-check-input me-2" type="radio" name="selected_option" value="4">
-                                    {{ poll.option_4 }}
-                                </label>
-                            </div>
-                        </div>
-                        <button type="submit" class="btn btn-success btn-lg">
-                            <i class="bi bi-check-circle me-2"></i>Отправить голос
-                        </button>
-                    </form>
-                {% endif %}
-                
-                <div class="mt-4">
-                    <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
-                        <i class="bi bi-arrow-left me-2"></i>Назад к списку опросов
-                    </a>
+                    <span class="badge bg-light text-dark">
+                        <i class="bi bi-people me-1"></i>
+                        {{ poll.votes|length }} голосов
+                    </span>
                 </div>
             </div>
-            <div class="card-footer text-muted">
-                <small>
-                    <i class="bi bi-clock"></i> Создан: {{ poll.created_at.strftime('%d.%m.%Y %H:%M') }}
-                    | <i class="bi bi-people"></i> Проголосовало: {{ poll.votes|length }}
-                </small>
+
+            <!-- Тело карточки -->
+            <div class="card-body p-4">
+                <!-- Вопрос -->
+                <div class="mb-4">
+                    <h4 class="poll-question text-dark">
+                        <i class="bi bi-question-circle text-primary me-2"></i>
+                        {{ poll.question }}
+                    </h4>
+                </div>
+
+                <!-- Уже голосовал -->
+                {% if has_voted %}
+                <div class="alert alert-warning already-voted-alert mb-4">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-exclamation-triangle-fill me-3 fs-4"></i>
+                        <div>
+                            <h5 class="alert-heading mb-2">Вы уже участвовали в этом опросе</h5>
+                            <p class="mb-2">
+                                С одного IP-адреса можно проголосовать только один раз.
+                                <small class="d-block text-muted mt-1">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    Ваш IP: {{ user_ip }}
+                                </small>
+                            </p>
+                            <a href="{{ url_for('poll_results', poll_id=poll.id) }}" 
+                               class="btn btn-outline-primary btn-sm">
+                                <i class="bi bi-bar-chart me-1"></i>Посмотреть результаты
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Форма голосования (если ещё не голосовал) -->
+                {% if not has_voted %}
+                <form method="POST" action="{{ url_for('vote', poll_id=poll.id) }}" id="voteForm">
+                    <div class="mb-4">
+                        <h5 class="mb-3">
+                            <i class="bi bi-check2-circle me-2"></i>
+                            Выберите вариант:
+                        </h5>
+                        
+                        <!-- Варианты ответов -->
+                        <div class="row g-3">
+                            {% set options = [
+                                (1, poll.option_1),
+                                (2, poll.option_2),
+                                (3, poll.option_3),
+                                (4, poll.option_4)
+                            ] %}
+                            
+                            {% for num, text in options %}
+                            <div class="col-md-6">
+                                <div class="vote-option card h-100" 
+                                    data-option="{{ num }}" 
+                                    onclick="selectOption(this.dataset.option)">
+                                    <div class="card-body">
+                                        <div class="d-flex align-items-center">
+                                            <div class="option-number me-3" id="optionNumber{{ num }}">
+                                                {{ num }}
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-1">Вариант {{ num }}</h6>
+                                                <p class="mb-0 text-muted">{{ text }}</p>
+                                            </div>
+                                        </div>
+                                        <input type="radio" 
+                                               class="form-check-input" 
+                                               name="selected_option" 
+                                               value="{{ num }}" 
+                                               id="option{{ num }}"
+                                               required>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        
+                        <!-- Сообщение об ошибке выбора -->
+                        <div class="alert alert-danger mt-3 d-none" id="selectionError">
+                            <i class="bi bi-exclamation-circle me-2"></i>
+                            Пожалуйста, выберите вариант ответа
+                        </div>
+                    </div>
+
+                    <!-- Кнопки действия -->
+                    <div class="d-flex justify-content-between align-items-center border-top pt-4">
+                        <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-2"></i>Назад
+                        </a>
+                        
+                        <div>
+                            <button type="button" class="btn btn-outline-info me-2" 
+                                    onclick="previewResults()">
+                                <i class="bi bi-eye me-1"></i>Предпросмотр результатов
+                            </button>
+                            <button type="submit" class="btn btn-success btn-lg px-4">
+                                <i class="bi bi-check-circle me-2"></i>Отправить голос
+                            </button>
+                        </div>
+                    </div>
+                </form>
+                {% else %}
+                <!-- Если уже голосовал - только кнопки -->
+                <div class="d-flex justify-content-between border-top pt-4">
+                    <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-2"></i>Назад к опросам
+                    </a>
+                    <a href="{{ url_for('poll_results', poll_id=poll.id) }}" class="btn btn-primary">
+                        <i class="bi bi-bar-chart me-2"></i>Смотреть результаты
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Футер карточки -->
+            <div class="card-footer bg-light py-3">
+                <div class="row text-muted small">
+                    <div class="col-md-6">
+                        <i class="bi bi-shield-check me-1"></i>
+                        Голосование защищено по IP-адресу
+                    </div>
+                    <div class="col-md-6 text-md-end">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Один голос с одного IP-адреса
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Информация о голосовании -->
+        <div class="card border-info mb-4">
+            <div class="card-header bg-info text-white">
+                <i class="bi bi-info-circle me-2"></i>Как работает голосование?
+            </div>
+            <div class="card-body">
+                <ul class="mb-0">
+                    <li>Выберите один из четырёх вариантов ответа</li>
+                    <li>Нажмите "Отправить голос" для подтверждения</li>
+                    <li>Результаты отобразятся сразу после голосования</li>
+                    <li>С одного устройства (IP-адреса) можно голосовать только один раз</li>
+                    <li>Голосование полностью анонимно</li>
+                </ul>
             </div>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Выбор варианта
+    function selectOption(optionNumber) {
+        // Снимаем выделение со всех вариантов
+        document.querySelectorAll('.vote-option').forEach(el => {
+            el.classList.remove('selected');
+        });
+        document.querySelectorAll('.option-number').forEach(el => {
+            el.classList.remove('selected');
+        });
+        
+        // Выделяем выбранный вариант
+        const selectedOption = document.querySelector(`.vote-option[onclick="selectOption(${optionNumber})"]`);
+        const selectedNumber = document.getElementById(`optionNumber${optionNumber}`);
+        const radioInput = document.getElementById(`option${optionNumber}`);
+        
+        selectedOption.classList.add('selected');
+        selectedNumber.classList.add('selected');
+        radioInput.checked = true;
+        
+        // Скрываем сообщение об ошибке
+        document.getElementById('selectionError').classList.add('d-none');
+    }
+    
+    // Валидация формы
+    document.getElementById('voteForm').addEventListener('submit', function(e) {
+        const selectedOption = document.querySelector('input[name="selected_option"]:checked');
+        if (!selectedOption) {
+            e.preventDefault();
+            document.getElementById('selectionError').classList.remove('d-none');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    });
+    
+    // Предпросмотр результатов
+    function previewResults() {
+        const selectedOption = document.querySelector('input[name="selected_option"]:checked');
+        if (selectedOption) {
+            alert('Вы выбрали вариант ' + selectedOption.value + '. Нажмите "Отправить голос" для подтверждения.');
+        } else {
+            alert('Сначала выберите вариант ответа');
+        }
+    }
+    
+    // Автовыбор первого варианта при загрузке (опционально)
+    document.addEventListener('DOMContentLoaded', function() {
+        // Можно раскомментировать для автовыбора
+        // selectOption(1);
+    });
+</script>
 {% endblock %}
