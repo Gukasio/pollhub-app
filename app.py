@@ -193,6 +193,17 @@ def poll_results(poll_id):
         for option in range(1, 5):
             percentages[option] = (vote_counts[option] / total_votes) * 100
     
+    avg_per_option = round(total_votes / 4) if total_votes > 0 else 0
+    leading_option = 0
+    leading_percentage = 0
+    
+    if total_votes > 0:
+        max_votes = 0
+        for option, count in vote_counts.items():
+            if count > max_votes:
+                max_votes = count
+                leading_option = option
+                leading_percentage = percentages[option]
 
 
     return render_template('poll_results.html',
@@ -202,7 +213,10 @@ def poll_results(poll_id):
                          percentages=percentages,
                          option_texts=option_texts,
                          user_vote=user_vote,
-                         user_ip=user_ip)
+                         user_ip=user_ip,
+                         avg_per_option=avg_per_option,
+                         leading_option=leading_option,
+                         leading_percentage=leading_percentage)
 
 
 if __name__ == '__main__':
