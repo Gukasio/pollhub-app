@@ -1,4 +1,4 @@
-from flask import Flask, flash, redirect, render_template, request, url_for
+from flask import Flask, flash, redirect, render_template, request, session, url_for
 
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
@@ -155,7 +155,49 @@ def vote(poll_id):
 
 @app.route('/admin')
 def admin():
-    return 'Админ-панель (в разработке)'
+    """Админ-панель без авторизации (для учебного проекта)"""
+    # Получаем все опросы с количеством голосов
+    polls = Poll.query.all()
+    
+    # Добавляем статистику к каждому опросу
+    polls_with_stats = []
+    for poll in polls:
+        vote_count = Vote.query.filter_by(poll_id=poll.id).count()
+        polls_with_stats.append({
+            'poll': poll,
+            'vote_count': vote_count,
+            'created_date': poll.created_at.strftime('%d.%m.%Y %H:%M')
+        })
+    
+    # Общая статистика
+    total_polls = len(polls)
+    total_votes = Vote.query.count()
+    
+    return render_template('admin.html',
+                         polls_with_stats=polls_with_stats,
+                         total_polls=total_polls,
+                         total_votes=total_votes)
+
+
+@app.route('/admin/poll/<int:poll_id>/delete', methods=['POST'])
+def delete_poll(poll_id):
+    """Удаление опроса и всех связанных голосов"""
+    poll = Poll.query.get_or_404(poll_id)
+    
+    try:
+        # Сначала удаляем все голоса для этого опроса
+        Vote.query.filter_by(poll_id=poll_id).delete()
+        
+        # Затем удаляем сам опрос
+        db.session.delete(poll)
+        db.session.commit()
+        
+        flash(f'Опрос "{poll.title}" успешно удален', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Ошибка при удалении: {str(e)}', 'danger')
+    
+    return redirect(url_for('admin'))
 
 @app.route('/poll/<int:poll_id>/results')
 def poll_results(poll_id):
