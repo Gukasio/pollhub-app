@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}Админ-панель - PollHub{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="alert alert-warning">
+        <i class="bi bi-exclamation-triangle me-2"></i>
+        <strong>Учебный проект:</strong> Админ-панель без авторизации. В реальном проекте нужна защита.
+    </div>
+
+    <h2 class="mb-4"><i class="bi bi-speedometer2 me-2"></i>Админ-панель PollHub</h2>
+    
+    <!-- Статистика -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Общая статистика</h5>
+                    <p class="card-text">
+                        <i class="bi bi-bar-chart me-2"></i>Всего опросов: <strong>{{ total_polls }}</strong><br>
+                        <i class="bi bi-people me-2"></i>Всего голосов: <strong>{{ total_votes }}</strong>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Таблица опросов -->
+    <h4 class="mb-3">Управление опросами</h4>
+    
+    {% if polls_with_stats %}
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Название</th>
+                    <th>Вопрос</th>
+                    <th>Голосов</th>
+                    <th>Создан</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in polls_with_stats %}
+                <tr>
+                    <td>{{ item.poll.id }}</td>
+                    <td><strong>{{ item.poll.title }}</strong></td>
+                    <td>{{ item.poll.question[:50] }}{% if item.poll.question|length > 50 %}...{% endif %}</td>
+                    <td>
+                        <span class="badge {% if item.vote_count > 0 %}bg-success{% else %}bg-secondary{% endif %}">
+                            {{ item.vote_count }}
+                        </span>
+                    </td>
+                    <td><small>{{ item.created_date }}</small></td>
+                    <td>
+                        <form method="POST" action="{{ url_for('delete_poll', poll_id=item.poll.id) }}" 
+                              onsubmit="return confirm('Удалить опрос \"{{ item.poll.title }}\" и {{ item.vote_count }} голосов?')"
+                              style="display: inline;">
+                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                <i class="bi bi-trash"></i> Удалить
+                            </button>
+                        </form>
+                        <a href="{{ url_for('poll_detail', poll_id=item.poll.id) }}" class="btn btn-sm btn-outline-primary ms-1">
+                            <i class="bi bi-eye"></i> Просмотр
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle me-2"></i>
+        Пока нет созданных опросов.
+    </div>
+    {% endif %}
+    
+    <div class="mt-4">
+        <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-2"></i>На главную
+        </a>
+    </div>
+</div>
+{% endblock %}
