@@ -1,0 +1,206 @@
+/* 
+ * PollHub Admin Panel Styles
+ * Файл: static/css/admin.css
+ */
+
+/* Основные стили админ-панели */
+.admin-container {
+    background-color: #f8f9fc;
+    min-height: calc(100vh - 76px);
+}
+
+/* Карточки статистики */
+.stat-card {
+    border-left: 4px solid;
+    border-radius: 0.35rem;
+    transition: all 0.3s;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15) !important;
+}
+
+.stat-card-primary { border-left-color: #4e73df; }
+.stat-card-success { border-left-color: #1cc88a; }
+.stat-card-info { border-left-color: #36b9cc; }
+.stat-card-warning { border-left-color: #f6c23e; }
+.stat-card-danger { border-left-color: #e74a3b; }
+
+/* Иконки в карточках */
+.stat-icon {
+    opacity: 0.7;
+    font-size: 2.5rem;
+}
+
+/* Таблица */
+.table-admin {
+    background: white;
+    border-radius: 0.35rem;
+    overflow: hidden;
+    box-shadow: 0 0 15px rgba(0,0,0,0.05);
+}
+
+.table-admin thead th {
+    border-bottom: 2px solid #e3e6f0;
+    font-weight: 600;
+    color: #5a5c69;
+    padding: 1rem;
+    background-color: #f8f9fc;
+}
+
+.table-admin tbody td {
+    padding: 1rem;
+    vertical-align: middle;
+    border-top: 1px solid #e3e6f0;
+}
+
+.table-admin tbody tr:hover {
+    background-color: #f8f9fe;
+    transition: background-color 0.2s;
+}
+
+/* Бейджи голосов */
+.vote-badge {
+    min-width: 45px;
+    font-weight: 600;
+    padding: 0.35em 0.65em;
+}
+
+.vote-badge-high { background-color: #1cc88a; }
+.vote-badge-medium { background-color: #f6c23e; }
+.vote-badge-low { background-color: #e74a3b; }
+
+/* Кнопки действий */
+.btn-admin-action {
+    width: 36px;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    margin: 0 3px;
+    transition: all 0.2s;
+}
+
+.btn-admin-action:hover {
+    transform: scale(1.1);
+}
+
+.btn-view { background-color: #4e73df; color: white; }
+.btn-view:hover { background-color: #3a56c4; color: white; }
+
+.btn-results { background-color: #36b9cc; color: white; }
+.btn-results:hover { background-color: #2a96a5; color: white; }
+
+.btn-edit { background-color: #f6c23e; color: white; }
+.btn-edit:hover { background-color: #dda20a; color: white; }
+
+.btn-delete { background-color: #e74a3b; color: white; }
+.btn-delete:hover { background-color: #c03526; color: white; }
+
+/* Пагинация */
+.pagination-admin .page-link {
+    color: #4e73df;
+    border: 1px solid #e3e6f0;
+    margin: 0 2px;
+    border-radius: 0.35rem;
+}
+
+.pagination-admin .page-item.active .page-link {
+    background-color: #4e73df;
+    border-color: #4e73df;
+    color: white;
+}
+
+/* Поиск */
+.search-admin {
+    position: relative;
+}
+
+.search-admin input {
+    padding-left: 2.5rem;
+    border-radius: 2rem;
+    border: 1px solid #e3e6f0;
+}
+
+.search-admin .search-icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #b7b9cc;
+    z-index: 10;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .admin-container {
+        padding: 0.5rem;
+    }
+    
+    .stat-card {
+        margin-bottom: 1rem;
+    }
+    
+    .table-responsive {
+        font-size: 0.9rem;
+    }
+    
+    .btn-admin-action {
+        width: 32px;
+        height: 32px;
+        font-size: 0.8rem;
+    }
+    
+    .search-admin input {
+        font-size: 0.9rem;
+    }
+}
+
+/* Анимации */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.admin-card {
+    animation: fadeIn 0.5s ease-out;
+}
+
+/* Прогресс-бары в таблице */
+.vote-progress {
+    height: 6px;
+    background-color: #eaecf4;
+    border-radius: 3px;
+    overflow: hidden;
+    margin-top: 5px;
+}
+
+.vote-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #4e73df, #1cc88a);
+    border-radius: 3px;
+}
+
+/* Тултипы */
+.admin-tooltip {
+    position: relative;
+    cursor: help;
+}
+
+.admin-tooltip:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #333;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    white-space: nowrap;
+    z-index: 1000;
+    margin-bottom: 5px;
+}

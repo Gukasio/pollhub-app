@@ -2,86 +2,364 @@
 
 {% block title %}Админ-панель - PollHub{% endblock %}
 
+{% block extra_css %}
+<style>
+    /* Специфичные стили для админ-панели */
+    .admin-card {
+        transition: all 0.3s;
+        border: none;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    }
+    
+    .admin-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 20px rgba(0,0,0,0.12);
+    }
+    
+    .stat-card {
+        border-left: 4px solid;
+        border-radius: 8px;
+    }
+    
+    .stat-card-primary {
+        border-left-color: #4e73df;
+    }
+    
+    .stat-card-success {
+        border-left-color: #1cc88a;
+    }
+    
+    .stat-card-warning {
+        border-left-color: #f6c23e;
+    }
+    
+    .poll-row:hover {
+        background-color: #f8f9fc;
+        cursor: pointer;
+    }
+    
+    .vote-badge {
+        min-width: 40px;
+        font-size: 0.85rem;
+    }
+    
+    .search-box {
+        max-width: 300px;
+    }
+    
+    .action-buttons .btn {
+        min-width: 80px;
+    }
+    
+    @media (max-width: 768px) {
+        .table-responsive {
+            font-size: 0.9rem;
+        }
+        
+        .action-buttons .btn {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.8rem;
+            min-width: 60px;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container">
-    <div class="alert alert-warning">
-        <i class="bi bi-exclamation-triangle me-2"></i>
-        <strong>Учебный проект:</strong> Админ-панель без авторизации. В реальном проекте нужна защита.
+<div class="container-fluid px-4">
+    <!-- Заголовок и навигация -->
+    <div class="d-flex justify-content-between align-items-center mb-4 mt-3">
+        <div>
+            <h1 class="h3 mb-0 text-gray-800">
+                <i class="bi bi-speedometer2 text-primary me-2"></i>Админ-панель
+            </h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Главная</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Администрирование</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="alert alert-warning alert-dismissible fade show py-2" role="alert">
+            <i class="bi bi-shield-exclamation me-2"></i>
+            <small>Учебный проект • Защита не реализована</small>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
     </div>
 
-    <h2 class="mb-4"><i class="bi bi-speedometer2 me-2"></i>Админ-панель PollHub</h2>
-    
-    <!-- Статистика -->
+    <!-- Карточки статистики -->
     <div class="row mb-4">
-        <div class="col-md-6">
-            <div class="card">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card admin-card stat-card stat-card-primary h-100">
                 <div class="card-body">
-                    <h5 class="card-title">Общая статистика</h5>
-                    <p class="card-text">
-                        <i class="bi bi-bar-chart me-2"></i>Всего опросов: <strong>{{ total_polls }}</strong><br>
-                        <i class="bi bi-people me-2"></i>Всего голосов: <strong>{{ total_votes }}</strong>
-                    </p>
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Всего опросов
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_polls }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-bar-chart-fill text-primary fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card admin-card stat-card stat-card-success h-100">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Всего голосов
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_votes }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-people-fill text-success fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card admin-card stat-card stat-card-warning h-100">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Активных опросов
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ polls_with_stats|selectattr('vote_count', '>', 0)|list|length }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-activity text-warning fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card admin-card h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-plus-circle-dotted text-muted fa-2x mb-2 d-block"></i>
+                    <a href="{{ url_for('create_poll') }}" class="btn btn-sm btn-outline-primary">
+                        Создать опрос
+                    </a>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Таблица опросов -->
-    <h4 class="mb-3">Управление опросами</h4>
-    
-    {% if polls_with_stats %}
-    <div class="table-responsive">
-        <table class="table table-hover">
-            <thead class="table-dark">
-                <tr>
-                    <th>ID</th>
-                    <th>Название</th>
-                    <th>Вопрос</th>
-                    <th>Голосов</th>
-                    <th>Создан</th>
-                    <th>Действия</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in polls_with_stats %}
-                <tr>
-                    <td>{{ item.poll.id }}</td>
-                    <td><strong>{{ item.poll.title }}</strong></td>
-                    <td>{{ item.poll.question[:50] }}{% if item.poll.question|length > 50 %}...{% endif %}</td>
-                    <td>
-                        <span class="badge {% if item.vote_count > 0 %}bg-success{% else %}bg-secondary{% endif %}">
-                            {{ item.vote_count }}
-                        </span>
-                    </td>
-                    <td><small>{{ item.created_date }}</small></td>
-                    <td>
-                        <form method="POST" action="{{ url_for('delete_poll', poll_id=item.poll.id) }}" 
-                              onsubmit="return confirm('Удалить опрос \"{{ item.poll.title }}\" и {{ item.vote_count }} голосов?')"
-                              style="display: inline;">
-                            <button type="submit" class="btn btn-sm btn-outline-danger">
-                                <i class="bi bi-trash"></i> Удалить
-                            </button>
-                        </form>
-                        <a href="{{ url_for('poll_detail', poll_id=item.poll.id) }}" class="btn btn-sm btn-outline-primary ms-1">
-                            <i class="bi bi-eye"></i> Просмотр
-                        </a>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    {% else %}
-    <div class="alert alert-info">
-        <i class="bi bi-info-circle me-2"></i>
-        Пока нет созданных опросов.
-    </div>
-    {% endif %}
-    
-    <div class="mt-4">
-        <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left me-2"></i>На главную
-        </a>
+    <!-- Панель управления -->
+    <div class="card admin-card mb-4">
+        <div class="card-header bg-white py-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="bi bi-list-check text-primary me-2"></i>Управление опросами
+                </h5>
+                <div class="search-box">
+                    <div class="input-group">
+                        <input type="text" class="form-control form-control-sm" 
+                               placeholder="Поиск опросов..." id="searchInput">
+                        <button class="btn btn-outline-secondary btn-sm" type="button" id="searchButton">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card-body">
+            {% if polls_with_stats %}
+            <div class="table-responsive">
+                <table class="table table-hover" id="pollsTable">
+                    <thead class="thead-light">
+                        <tr>
+                            <th scope="col" style="width: 5%">
+                                <i class="bi bi-hash me-1"></i>ID
+                            </th>
+                            <th scope="col" style="width: 20%">
+                                <i class="bi bi-card-heading me-1"></i>Название
+                            </th>
+                            <th scope="col" style="width: 30%">
+                                <i class="bi bi-chat-quote me-1"></i>Вопрос
+                            </th>
+                            <th scope="col" style="width: 10%">
+                                <i class="bi bi-bar-chart me-1"></i>Голоса
+                            </th>
+                            <th scope="col" style="width: 15%">
+                                <i class="bi bi-calendar me-1"></i>Создан
+                            </th>
+                            <th scope="col" style="width: 20%" class="text-center">
+                                <i class="bi bi-gear me-1"></i>Действия
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in polls_with_stats %}
+                        <tr class="poll-row" data-poll-id="{{ item.poll.id }}">
+                            <td class="fw-bold">#{{ item.poll.id }}</td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-card-text text-muted me-2"></i>
+                                    <strong>{{ item.poll.title }}</strong>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="text-truncate d-inline-block" style="max-width: 250px;" 
+                                      title="{{ item.poll.question }}">
+                                    {{ item.poll.question }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if item.vote_count > 0 %}
+                                <span class="badge bg-success rounded-pill vote-badge">
+                                    <i class="bi bi-check2-circle me-1"></i>{{ item.vote_count }}
+                                </span>
+                                {% else %}
+                                <span class="badge bg-secondary rounded-pill vote-badge">
+                                    <i class="bi bi-hourglass me-1"></i>0
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <small class="text-muted">
+                                    <i class="bi bi-clock-history me-1"></i>
+                                    {{ item.created_date }}
+                                </small>
+                            </td>
+                            <td class="action-buttons text-center">
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <a href="{{ url_for('poll_detail', poll_id=item.poll.id) }}" 
+                                       class="btn btn-outline-primary" title="Просмотр">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a href="{{ url_for('poll_results', poll_id=item.poll.id) }}" 
+                                       class="btn btn-outline-info" title="Результаты">
+                                        <i class="bi bi-graph-up"></i>
+                                    </a>
+                                    <form method="POST" 
+                                          action="{{ url_for('delete_poll', poll_id=item.poll.id) }}" 
+                                          class="d-inline"
+                                          onsubmit="return confirmDelete('{{ item.poll.title }}', {{ item.vote_count }})">
+                                        <button type="submit" class="btn btn-outline-danger" title="Удалить">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Пагинация (простая) -->
+            <div class="d-flex justify-content-between align-items-center mt-3">
+                <div class="text-muted">
+                    Показано <strong>{{ polls_with_stats|length }}</strong> из <strong>{{ total_polls }}</strong> опросов
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-sm btn-outline-secondary" disabled>
+                        <i class="bi bi-chevron-left"></i>
+                    </button>
+                    <span class="btn btn-sm btn-light">1</span>
+                    <button class="btn btn-sm btn-outline-secondary" disabled>
+                        <i class="bi bi-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+            
+            {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-inbox text-muted display-5 d-block mb-3"></i>
+                <h4 class="text-muted">Пока нет опросов</h4>
+                <p class="text-muted mb-4">Создайте первый опрос, чтобы начать работу</p>
+                <a href="{{ url_for('create_poll') }}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle me-2"></i>Создать опрос
+                </a>
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="card-footer bg-white">
+            <div class="row">
+                <div class="col-md-6">
+                    <small class="text-muted">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Для удаления опроса требуются права администратора
+                    </small>
+                </div>
+                <div class="col-md-6 text-end">
+                    <a href="{{ url_for('index') }}" class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-arrow-return-left me-1"></i>Вернуться на сайт
+                    </a>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Функция подтверждения удаления
+    function confirmDelete(pollTitle, voteCount) {
+        let message = `Удалить опрос "${pollTitle}"?`;
+        if (voteCount > 0) {
+            message += `\nБудет также удалено ${voteCount} голосов.`;
+        }
+        return confirm(message);
+    }
+    
+    // Простой поиск по таблице
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('searchInput');
+        const searchButton = document.getElementById('searchButton');
+        const tableRows = document.querySelectorAll('#pollsTable tbody tr');
+        
+        function performSearch() {
+            const searchTerm = searchInput.value.toLowerCase().trim();
+            
+            tableRows.forEach(row => {
+                const pollTitle = row.cells[1].textContent.toLowerCase();
+                const pollQuestion = row.cells[2].textContent.toLowerCase();
+                const pollId = row.cells[0].textContent.toLowerCase();
+                
+                if (pollTitle.includes(searchTerm) || 
+                    pollQuestion.includes(searchTerm) || 
+                    pollId.includes(searchTerm)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+        
+        searchButton.addEventListener('click', performSearch);
+        searchInput.addEventListener('keyup', function(event) {
+            if (event.key === 'Enter') {
+                performSearch();
+            }
+        });
+        
+        // Клик по строке ведет на страницу опроса
+        tableRows.forEach(row => {
+            row.addEventListener('click', function(e) {
+                // Проверяем что кликнули не по кнопке
+                if (!e.target.closest('.btn') && !e.target.closest('form')) {
+                    const pollId = this.getAttribute('data-poll-id');
+                    window.location.href = `/poll/${pollId}`;
+                }
+            });
+        });
+    });
+</script>
 {% endblock %}
