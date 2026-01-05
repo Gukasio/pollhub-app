@@ -4,7 +4,7 @@
 
 {% block extra_css %}
 <style>
-    /* Специфичные стили для админ-панели */
+    /* Стили для админ-панели */
     .admin-card {
         transition: all 0.3s;
         border: none;
@@ -261,7 +261,7 @@
                 </table>
             </div>
             
-            <!-- Пагинация (простая) -->
+            <!-- Пагинация -->
             <div class="d-flex justify-content-between align-items-center mt-3">
                 <div class="text-muted">
                     Показано <strong>{{ polls_with_stats|length }}</strong> из <strong>{{ total_polls }}</strong> опросов

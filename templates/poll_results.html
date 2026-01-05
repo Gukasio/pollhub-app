@@ -177,7 +177,7 @@
                     </div>
                 </div>
                 
-                <!-- Карточка 2: Среднее на вариант -->
+                <!-- Среднее на вариант -->
                 <div class="col-md-3 mb-3">
                     <div class="stat-card card border-success text-center">
                         <div class="card-body">
@@ -190,7 +190,7 @@
                     </div>
                 </div>
                 
-                <!-- Карточка 3: Лидирующий вариант -->
+                <!-- Лидирующий вариант -->
                 <div class="col-md-3 mb-3">
                     <div class="stat-card card border-warning text-center">
                         <div class="card-body">
@@ -210,7 +210,7 @@
                     </div>
                 </div>
                 
-                <!-- Карточка 4: Дата создания -->
+                <!-- Дата создания -->
                 <div class="col-md-3 mb-3">
                     <div class="stat-card card border-info text-center">
                         <div class="card-body">
@@ -413,19 +413,16 @@
 
 {% block extra_js %}
 <script>
-    // Анимация при загрузке - исправленная версия
+    // Анимация при загрузке
     document.addEventListener('DOMContentLoaded', function() {
-        // Анимация прогресс-баров
         const progressBars = document.querySelectorAll('.progress-bar-animated');
         progressBars.forEach(function(bar) {
-            // Сохраняем оригинальную ширину в data-атрибут
+            
             const originalWidth = bar.style.width;
             bar.setAttribute('data-width', originalWidth);
-            
-            // Устанавливаем начальную ширину 0%
+
             bar.style.width = '0%';
-            
-            // Анимируем через небольшой таймаут
+
             setTimeout(function() {
                 bar.style.width = originalWidth;
             }, 100);
@@ -434,14 +431,12 @@
         // Анимация диаграммы
         const chartBars = document.querySelectorAll('.chart-bar-inner');
         chartBars.forEach(function(bar) {
-            // Сохраняем оригинальную высоту
+
             const originalHeight = bar.style.height;
             bar.setAttribute('data-height', originalHeight);
-            
-            // Устанавливаем начальную высоту 0
+
             bar.style.height = '0px';
             
-            // Анимируем
             setTimeout(function() {
                 bar.style.height = originalHeight;
             }, 300);

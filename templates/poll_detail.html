@@ -104,7 +104,7 @@
                 </div>
                 {% endif %}
 
-                <!-- Форма голосования (если ещё не голосовал) -->
+                <!-- Форма голосования (для новичков) -->
                 {% if not has_voted %}
                 <form method="POST" action="{{ url_for('vote', poll_id=poll.id) }}" id="voteForm">
                     <div class="mb-4">
@@ -174,7 +174,7 @@
                     </div>
                 </form>
                 {% else %}
-                <!-- Если уже голосовал - только кнопки -->
+                <!-- Если уже голосовал-->
                 <div class="d-flex justify-content-between border-top pt-4">
                     <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
                         <i class="bi bi-arrow-left me-2"></i>Назад к опросам
@@ -265,10 +265,5 @@
         }
     }
     
-    // Автовыбор первого варианта при загрузке (опционально)
-    document.addEventListener('DOMContentLoaded', function() {
-        // Можно раскомментировать для автовыбора
-        // selectOption(1);
-    });
 </script>
 {% endblock %}

@@ -16,7 +16,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
 
-# МОДЕЛИ БАЗЫ ДАННЫХ
+# Модели базы данных
 class Poll(db.Model):
     """Модель опроса"""
     id = db.Column(db.Integer, primary_key=True)
@@ -61,7 +61,7 @@ class Vote(db.Model):
         return f'<Vote poll:{self.poll_id} option:{self.selected_option}>'
 
 
-# ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
+# Вспомогательные функции
 def validate_poll_data(title, question, options):
     """Валидация данных опроса"""
     errors = []
@@ -108,7 +108,7 @@ def get_user_vote(poll_id, user_ip):
     return Vote.query.filter_by(poll_id=poll_id, ip_address=user_ip).first()
 
 
-# МАРШРУТЫ ПРИЛОЖЕНИЯ
+# Маршруты приложения
 @app.route('/')
 def index():
     """Главная страница - список всех опросов"""
@@ -324,9 +324,23 @@ def internal_error(error):
     db.session.rollback()
     return render_template('500.html'), 500
 
+# Тествые маршруты для проверки
+@app.route('/test/500')
+def test_500_error():
+    """Тестовый маршрут для проверки 500 ошибки"""
+    # Искусственно вызываем исключение
+    raise Exception("Тестовая 500 ошибка - страница ошибки работает!")
 
-# ТОЧКА ВХОДА
+
+@app.route('/test/404')
+def test_404_error():
+    """Тестовый маршрут для проверки 404 ошибки"""
+    from flask import abort  # Добавьте этот импорт вверху файла
+    abort(404)  # Явно вызываем 404 ошибку
+
+
+# Точка входа
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
-    app.run(debug=True)
+    app.run(debug=False) 
