@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}Ошибка сервера - PollHub{% endblock %}
+
+{% block content %}
+<div class="text-center py-5">
+    <h1 class="display-1 text-danger">500</h1>
+    <h2 class="mb-4">Внутренняя ошибка сервера</h2>
+    <p class="lead mb-4">Что-то пошло не так. Мы уже работаем над исправлением проблемы.</p>
+    <div class="d-flex justify-content-center gap-3">
+        <a href="{{ url_for('index') }}" class="btn btn-primary">
+            <i class="bi bi-house-door me-2"></i>На главную
+        </a>
+        <button onclick="window.location.reload()" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-clockwise me-2"></i>Обновить страницу
+        </button>
+    </div>
+</div>
+{% endblock %}
