@@ -1,22 +1,24 @@
-from flask import Flask, flash, redirect, render_template, request, session, url_for
-
-from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime
-from datetime import timezone
 import os
+from datetime import datetime, timezone
 
+from flask import Flask, flash, redirect, render_template, request, url_for
+from flask_sqlalchemy import SQLAlchemy
+
+
+# Инициализация приложения
 app = Flask(__name__)
-app.secret_key = 'dev-secret-key-12345'
+app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-key-12345')
 
-# Настройка базы данных
-db_path = os.path.join(os.path.dirname(__file__), 'polls.db')
-app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
+# Конфигурация базы данных
+app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{os.path.join(os.path.dirname(__file__), 'polls.db')}"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
-# Модель опроса
+
+# МОДЕЛИ БАЗЫ ДАННЫХ
 class Poll(db.Model):
+    """Модель опроса"""
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200), nullable=False)
     question = db.Column(db.String(500), nullable=False)
@@ -27,241 +29,304 @@ class Poll(db.Model):
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
     def __repr__(self):
-        return f'<Poll {self.title}>'
+        return f'<Poll "{self.title}">'
+    
+    def get_option_text(self, option_number):
+        """Получить текст варианта ответа по номеру"""
+        options = {
+            1: self.option_1,
+            2: self.option_2,
+            3: self.option_3,
+            4: self.option_4
+        }
+        return options.get(option_number, "Неизвестный вариант")
+    
+    def get_vote_count(self):
+        """Получить количество голосов для этого опроса"""
+        return Vote.query.filter_by(poll_id=self.id).count()
 
 
 class Vote(db.Model):
+    """Модель голоса"""
     id = db.Column(db.Integer, primary_key=True)
     poll_id = db.Column(db.Integer, db.ForeignKey('poll.id'), nullable=False)
     ip_address = db.Column(db.String(100), nullable=False)
     selected_option = db.Column(db.Integer, nullable=False)  # 1, 2, 3 или 4
     voted_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
-    # Связь с опросом
+    # Связи
     poll = db.relationship('Poll', backref=db.backref('votes', lazy=True))
 
     def __repr__(self):
-        return f'<Vote for Poll {self.poll_id}, option {self.selected_option}>'
+        return f'<Vote poll:{self.poll_id} option:{self.selected_option}>'
 
 
+# ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
+def validate_poll_data(title, question, options):
+    """Валидация данных опроса"""
+    errors = []
+    
+    if not title or not title.strip():
+        errors.append('Название опроса обязательно')
+    
+    if not question or not question.strip():
+        errors.append('Вопрос опроса обязателен')
+    
+    for i, option in enumerate(options, 1):
+        if not option or not option.strip():
+            errors.append(f'Вариант ответа {i} обязателен')
+    
+    return errors
+
+
+def calculate_vote_statistics(poll_id):
+    """Расчет статистики голосования для опроса"""
+    votes = Vote.query.filter_by(poll_id=poll_id).all()
+    total_votes = len(votes)
+    
+    # Подсчет голосов по вариантам
+    vote_counts = {1: 0, 2: 0, 3: 0, 4: 0}
+    for vote in votes:
+        vote_counts[vote.selected_option] += 1
+    
+    # Расчет процентов
+    percentages = {}
+    if total_votes > 0:
+        for option in range(1, 5):
+            percentages[option] = (vote_counts[option] / total_votes) * 100
+    
+    return {
+        'votes': votes,
+        'total_votes': total_votes,
+        'vote_counts': vote_counts,
+        'percentages': percentages
+    }
+
+
+def get_user_vote(poll_id, user_ip):
+    """Получить голос пользователя для опроса"""
+    return Vote.query.filter_by(poll_id=poll_id, ip_address=user_ip).first()
+
+
+# МАРШРУТЫ ПРИЛОЖЕНИЯ
 @app.route('/')
 def index():
-    # Получаем все опросы из БД, отсортированные по дате (новые первыми)
+    """Главная страница - список всех опросов"""
     polls = Poll.query.order_by(Poll.created_at.desc()).all()
     return render_template('index.html', polls=polls)
 
-# Временные маршруты для работы HTML
+
 @app.route('/create', methods=['GET', 'POST'])
 def create_poll():
+    """Создание нового опроса"""
     if request.method == 'POST':
-        # Получаем данные из формы
-        title = request.form.get('title')
-        question = request.form.get('question')
-        option_1 = request.form.get('option_1')
-        option_2 = request.form.get('option_2')
-        option_3 = request.form.get('option_3')
-        option_4 = request.form.get('option_4')
+        # Получение данных из формы
+        form_data = {
+            'title': request.form.get('title', '').strip(),
+            'question': request.form.get('question', '').strip(),
+            'options': [
+                request.form.get('option_1', '').strip(),
+                request.form.get('option_2', '').strip(),
+                request.form.get('option_3', '').strip(),
+                request.form.get('option_4', '').strip()
+            ]
+        }
         
-        # Валидация данных
-        if not title or not question:
-            flash('Название и вопрос опроса обязательны!', 'danger')
-            return app.redirect(app.url_for('create_poll'))
-        
-        if not all([option_1, option_2, option_3, option_4]):
-            flash('Все 4 варианта ответа должны быть заполнены!', 'danger')
-            return app.redirect(app.url_for('create_poll'))
-        
-        # Создаем новый опрос
-        new_poll = Poll(
-            title=title.strip(),
-            question=question.strip(),
-            option_1=option_1.strip(),
-            option_2=option_2.strip(),
-            option_3=option_3.strip(),
-            option_4=option_4.strip()
+        # Валидация
+        errors = validate_poll_data(
+            form_data['title'], 
+            form_data['question'], 
+            form_data['options']
         )
         
-        # Сохраняем в БД
+        if errors:
+            for error in errors:
+                flash(error, 'danger')
+            return redirect(url_for('create_poll'))
+        
+        # Создание опроса
         try:
+            new_poll = Poll(
+                title=form_data['title'],
+                question=form_data['question'],
+                option_1=form_data['options'][0],
+                option_2=form_data['options'][1],
+                option_3=form_data['options'][2],
+                option_4=form_data['options'][3]
+            )
+            
             db.session.add(new_poll)
             db.session.commit()
+            
             flash('Опрос успешно создан!', 'success')
-            return app.redirect(url_for('index'))
+            return redirect(url_for('index'))
+            
         except Exception as e:
             db.session.rollback()
             flash(f'Ошибка при создании опроса: {str(e)}', 'danger')
-            return app.redirect(app.url_for('create_poll'))
+            return redirect(url_for('create_poll'))
     
-    # GET запрос - показываем форму (форму сделает напарник)
+    # GET запрос - отображение формы
     return render_template('create_poll.html')
+
 
 @app.route('/poll/<int:poll_id>')
 def poll_detail(poll_id):
-    # Находим опрос по ID или возвращаем 404
+    """Страница опроса с формой голосования"""
     poll = Poll.query.get_or_404(poll_id)
-    
-    # Получаем IP пользователя для проверки голосования
     user_ip = request.remote_addr
+    user_vote = get_user_vote(poll_id, user_ip)
     
-    # Проверяем голосовал ли уже этот IP
-    has_voted = Vote.query.filter_by(poll_id=poll_id, ip_address=user_ip).first() is not None
-    
-    return render_template('poll_detail.html', 
-                         poll=poll, 
-                         has_voted=has_voted, 
-                         user_ip=user_ip)
+    return render_template(
+        'poll_detail.html',
+        poll=poll,
+        has_voted=user_vote is not None,
+        user_ip=user_ip,
+        user_vote=user_vote
+    )
+
 
 @app.route('/poll/<int:poll_id>/vote', methods=['POST'])
 def vote(poll_id):
     """Обработка голосования"""
-    
-    # Находим опрос
     poll = Poll.query.get_or_404(poll_id)
-    
-    # Получаем выбранный вариант
+    user_ip = request.remote_addr
     selected_option = request.form.get('selected_option')
     
-    # Валидация: выбран ли вариант
+    # Валидация выбора
     if not selected_option or selected_option not in ['1', '2', '3', '4']:
         flash('Пожалуйста, выберите вариант ответа', 'danger')
         return redirect(url_for('poll_detail', poll_id=poll_id))
     
-    # Получаем IP пользователя
-    user_ip = request.remote_addr
-    
-    # Проверяем не голосовал ли уже этот IP в этом опросе
-    existing_vote = Vote.query.filter_by(poll_id=poll_id, ip_address=user_ip).first()
-    if existing_vote:
-        flash(f'Вы уже голосовали в этом опросе (IP: {user_ip})', 'warning')
+    # Проверка повторного голосования
+    if get_user_vote(poll_id, user_ip):
+        flash('Вы уже голосовали в этом опросе!', 'warning')
         return redirect(url_for('poll_results', poll_id=poll_id))
     
-    # Создаем новый голос
-    new_vote = Vote(
-        poll_id=poll_id,
-        ip_address=user_ip,
-        selected_option=int(selected_option)
-    )
-    
-    # Сохраняем в БД
+    # Сохранение голоса
     try:
+        new_vote = Vote(
+            poll_id=poll_id,
+            ip_address=user_ip,
+            selected_option=int(selected_option)
+        )
+        
         db.session.add(new_vote)
         db.session.commit()
+        
         flash('Ваш голос успешно учтен!', 'success')
         return redirect(url_for('poll_results', poll_id=poll_id))
+        
     except Exception as e:
         db.session.rollback()
         flash(f'Ошибка при сохранении голоса: {str(e)}', 'danger')
         return redirect(url_for('poll_detail', poll_id=poll_id))
 
+
+@app.route('/poll/<int:poll_id>/results')
+def poll_results(poll_id):
+    """Страница результатов опроса"""
+    poll = Poll.query.get_or_404(poll_id)
+    user_ip = request.remote_addr
+    
+    # Получение статистики
+    stats = calculate_vote_statistics(poll_id)
+    user_vote = get_user_vote(poll_id, user_ip)
+    
+    # Подготовка данных для шаблона
+    option_texts = {
+        1: poll.option_1,
+        2: poll.option_2,
+        3: poll.option_3,
+        4: poll.option_4
+    }
+    
+    # Определение лидирующего варианта
+    leading_option = None
+    leading_percentage = 0
+    
+    if stats['total_votes'] > 0:
+        for option, percentage in stats['percentages'].items():
+            if percentage > leading_percentage:
+                leading_percentage = percentage
+                leading_option = option
+    
+    return render_template(
+        'poll_results.html',
+        poll=poll,
+        total_votes=stats['total_votes'],
+        vote_counts=stats['vote_counts'],
+        percentages=stats['percentages'],
+        option_texts=option_texts,
+        user_vote=user_vote.selected_option if user_vote else None,
+        user_ip=user_ip,
+        leading_option=leading_option,
+        leading_percentage=leading_percentage
+    )
+
+
 @app.route('/admin')
 def admin():
-    """Админ-панель без авторизации (для учебного проекта)"""
-    # Получаем все опросы с количеством голосов
+    """Админ-панель"""
     polls = Poll.query.all()
     
-    # Добавляем статистику к каждому опросу
+    # Подготовка данных для отображения
     polls_with_stats = []
     for poll in polls:
-        vote_count = Vote.query.filter_by(poll_id=poll.id).count()
         polls_with_stats.append({
             'poll': poll,
-            'vote_count': vote_count,
+            'vote_count': poll.get_vote_count(),
             'created_date': poll.created_at.strftime('%d.%m.%Y %H:%M')
         })
     
-    # Общая статистика
-    total_polls = len(polls)
     total_votes = Vote.query.count()
     
-    return render_template('admin.html',
-                         polls_with_stats=polls_with_stats,
-                         total_polls=total_polls,
-                         total_votes=total_votes)
+    return render_template(
+        'admin.html',
+        polls_with_stats=polls_with_stats,
+        total_polls=len(polls),
+        total_votes=total_votes
+    )
 
 
 @app.route('/admin/poll/<int:poll_id>/delete', methods=['POST'])
 def delete_poll(poll_id):
-    """Удаление опроса и всех связанных голосов"""
+    """Удаление опроса"""
     poll = Poll.query.get_or_404(poll_id)
+    poll_title = poll.title
     
     try:
-        # Сначала удаляем все голоса для этого опроса
+        # Удаление связанных голосов
         Vote.query.filter_by(poll_id=poll_id).delete()
         
-        # Затем удаляем сам опрос
+        # Удаление опроса
         db.session.delete(poll)
         db.session.commit()
         
-        flash(f'Опрос "{poll.title}" успешно удален', 'success')
+        flash(f'Опрос "{poll_title}" успешно удален', 'success')
+        
     except Exception as e:
         db.session.rollback()
         flash(f'Ошибка при удалении: {str(e)}', 'danger')
     
     return redirect(url_for('admin'))
 
-@app.route('/poll/<int:poll_id>/results')
-def poll_results(poll_id):
-    """Страница результатов опроса"""
-    
-    poll = Poll.query.get_or_404(poll_id)
-    user_ip = request.remote_addr
-    
-    # Получаем все голоса для этого опроса
-    votes = Vote.query.filter_by(poll_id=poll_id).all()
-    total_votes = len(votes)
-    
-    # Считаем голоса по вариантам
-    vote_counts = {1: 0, 2: 0, 3: 0, 4: 0}
-    for vote in votes:
-        vote_counts[vote.selected_option] += 1
-    
-    # Находим голос текущего пользователя
-    user_vote = None
-    for vote in votes:
-        if vote.ip_address == user_ip:
-            user_vote = vote.selected_option
-            break
 
-    # Считаем проценты
-    percentages = {}
-    option_texts = {
-        1: poll.option_1,
-        2: poll.option_2, 
-        3: poll.option_3,
-        4: poll.option_4
-    }
-    
-    if total_votes > 0:
-        for option in range(1, 5):
-            percentages[option] = (vote_counts[option] / total_votes) * 100
-    
-    avg_per_option = round(total_votes / 4) if total_votes > 0 else 0
-    leading_option = 0
-    leading_percentage = 0
-    
-    if total_votes > 0:
-        max_votes = 0
-        for option, count in vote_counts.items():
-            if count > max_votes:
-                max_votes = count
-                leading_option = option
-                leading_percentage = percentages[option]
+@app.errorhandler(404)
+def page_not_found(error):
+    """Обработка 404 ошибки"""
+    return render_template('404.html'), 404
 
 
-    return render_template('poll_results.html',
-                         poll=poll,
-                         total_votes=total_votes,
-                         vote_counts=vote_counts,
-                         percentages=percentages,
-                         option_texts=option_texts,
-                         user_vote=user_vote,
-                         user_ip=user_ip,
-                         avg_per_option=avg_per_option,
-                         leading_option=leading_option,
-                         leading_percentage=leading_percentage)
+@app.errorhandler(500)
+def internal_error(error):
+    """Обработка 500 ошибки"""
+    db.session.rollback()
+    return render_template('500.html'), 500
 
 
+# ТОЧКА ВХОДА
 if __name__ == '__main__':
     with app.app_context():
-        db.create_all()        
+        db.create_all()
     app.run(debug=True)
