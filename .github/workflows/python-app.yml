@@ -58,3 +58,7 @@ jobs:
         ls -la templates/ || echo "No templates directory"
         echo -e "\nStatic files:"
         ls -la static/ || echo "No static directory"
+    
+    - name: Run tests with pytest
+      run: |
+        python -m pytest test_app.py -v
